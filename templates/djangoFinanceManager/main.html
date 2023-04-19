@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'djangoFinanceManager/css/main.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="information-box-container">
+        <div class="information-box"><h4>Баланс</h4><span class="money">{{ balance }} $</span></div>
+        <div class="information-box"><h4>Витрати</h4><span class="money">-138 $</div>
+        <div class="information-box"><h4>Доходи</h4><span class="money">+449 $</div>
+        <div class="information-box"><h4>PNL</h4><span class="money">-13,8 %</div>
+    </div>
+    <div class="diagrams-box-container">
+        <div class="diagram-box">...</div>
+        <div class="diagram-box">...</div>
+    </div>
+{% endblock content %}

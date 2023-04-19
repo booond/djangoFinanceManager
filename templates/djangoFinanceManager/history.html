@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if history %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Валюта</th>
+                    <th>Тип</th>
+                    <th>Кількість</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in history %}
+                    <tr>
+                        <th>{{ note.crypto_currency }}</th>
+                        <th>{{ note.type }}</th>
+                        <th>{{ note.amount }}</th>
+                        <th>{{ note.date }}</th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Історії не існує поки що.</p>
+    {% endif %}
+{% endblock content %}

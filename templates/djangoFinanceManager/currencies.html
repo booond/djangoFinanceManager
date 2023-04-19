@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'djangoFinanceManager/css/tables.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% if crc %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Валюта</th>
+                    <th>Ідентифікатор</th>
+                    <th>Кількість</th>
+                    <th>Останнє оновлення</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cr in crc %}
+                    <tr>
+                        <th>{{ cr.symbols }}</th>
+                        <th>{{ cr.identificator }}</th>
+                        <th>{{ cr.value }}</th>
+                        <th>{{ cr.last_updated }}</th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% else %}
+    <p>Активів не існує поки що.</p>
+{% endif %}
+{% endblock content %}

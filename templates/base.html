@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>{{ title }} — Finance Manager</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    {% block head %}
+        {{ block.super }}
+        <link rel='stylesheet' type='text/css' media='screen' href='{% static "djangoFinanceManager/css/base.css" %}'>
+    {% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.css" integrity="sha512-Z0kTB03S7BU+JFU0nw9mjSBcRnZm2Bvm0tzOX9/OuOuz01XQfOpa0w/N9u6Jf2f1OAdegdIPWZ9nIZZ+keEvBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src='main.js'></script>
+</head>
+<body>
+    <nav class="header">
+            <div class="logo"><h3>Bomax Finance</h3></div>
+            <ul>
+                <li><a href="/"><i class="fa-solid fa-user"></i></a></li>
+                <li><a href="/settings"><i class="fa-solid fa-gear"></i></a></li>
+            </ul>
+        </nav>
+        <div class="container">
+            <aside class="menu">
+                <ul>
+                    <li><a href="/"><span class="menu-link">Зведення</span></a></li>
+                    <li><a href="/history"><span class="menu-link">Історія</span></a></li>
+                    <li><a href="/currencies"><span class="menu-link">Активи</span></a></li>
+                </ul>
+            </aside>
+            <main class="content">
+                {% block content %}
+
+                {% endblock content %}
+            </main>
+        </div>
+</body>
+</html>
