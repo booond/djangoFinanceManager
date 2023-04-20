@@ -1,4 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'djangoFinanceManager/css/tables.css' %}">
+{% endblock %}
 
 {% block content %}
     {% if history %}

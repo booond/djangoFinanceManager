@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import History, Cryptocurrencies
-from .forms import PostForm
+from .forms import PostForm, HistoryForm
 from .config import coins_list
 
 import requests
@@ -72,5 +72,37 @@ def settings(request):
                     return response
     else:
         form = PostForm()
-    context = {"form": form, "title": "Історія"}
+    context = {"form": form, "title": "Налаштування"}
     return render(request, "djangoFinanceManager/settings_page.html", context)
+
+
+def add(request):
+    if request.method == "POST":
+        form = HistoryForm(request.POST)
+        if form.is_valid():
+            crypto_currency = request.POST.get('crypto_currency')
+            value = float(request.POST.get('amount'))
+            tp = request.POST.get('type')
+            obj = Cryptocurrencies.objects.get(id=crypto_currency)
+            if tp == 'income':
+                result = float(obj.value) + value
+                obj.value = result
+            elif tp == 'expense':
+                result = float(obj.value) - value
+                if result >= 0:
+                    obj.value = result
+                else:
+                    message = 'Error! You waste more, than you have.'
+                    response = redirect('add')
+                    response.set_cookie('message', message, 1)
+                    return response
+            obj.save()
+            form.save()
+            message = 'Succesful added!'
+            response = redirect('add')
+            response.set_cookie('message', message, 1)
+            return response
+    else:
+        form = HistoryForm()
+    context = {"form": form, "title": "Додавання запису"}
+    return render(request, "djangoFinanceManager/add_page.html", context)

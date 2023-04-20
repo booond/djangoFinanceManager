@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>Додай доходи / витрати:</h3>
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+    {% if request.COOKIES.message %}
+    <div style="color: #a84c4c">{{ request.COOKIES.message }}</div>
+    {% endif %}
+{% endblock content %}

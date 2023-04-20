@@ -23,5 +23,6 @@ urlpatterns = [
     path('', views.main, name='main'),
     path('history/', views.history, name='history'),
     path('settings/', views.settings, name='settings'),
-    path('currencies/', views.currencies, name='currencies')
+    path('currencies/', views.currencies, name='currencies'),
+    path('add/', views.add, name='add')
 ]

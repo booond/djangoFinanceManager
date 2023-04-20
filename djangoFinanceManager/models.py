@@ -11,6 +11,9 @@ class Cryptocurrencies(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     is_crypto = models.BooleanField()
 
+    def __str__(self):
+        return f'{self.symbols} ({self.identificator}) — {float(self.value):g}'
+
 
 class History(models.Model):
     class Meta:
