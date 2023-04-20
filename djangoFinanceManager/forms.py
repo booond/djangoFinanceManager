@@ -7,4 +7,6 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Cryptocurrencies
-        fields = ('identificator', 'symbols', 'value', 'is_crypto',)
+
+        exclude = ('symbols',)
+        fields = ('identificator', 'value', 'is_crypto',)

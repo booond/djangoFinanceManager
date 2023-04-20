@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import History, Cryptocurrencies
 from .forms import PostForm
+from .config import coins_list
 
 import requests
 
@@ -46,23 +47,29 @@ def currencies(request):
 
 
 def settings(request):
-    # https://api.coingecko.com/api/v3/coins/list
     if request.method == "POST":
         form = PostForm(request.POST)
         if form.is_valid():
             identificator = request.POST.get('identificator')
             if Cryptocurrencies.objects.filter(identificator=identificator).exists():
-                message = 'Error! This currency is already exists.'
+                message = 'Error! This currency is already exists in your list.'
                 response = redirect('settings')
                 response.set_cookie('message', message, 1)
                 return response
             else:
-                form.save()
-                message = 'Succesful added!'
-                response = redirect('settings')
-                response.set_cookie('message', message, 1)
-                return response
-
+                for item in coins_list:
+                    if item["id"] == identificator:
+                        form.instance.symbols = item["symbol"].upper()
+                        form.save()
+                        message = 'Succesful added!'
+                        response = redirect('settings')
+                        response.set_cookie('message', message, 1)
+                        return response
+                else:
+                    message = 'Error! This currency doesn\'t support.'
+                    response = redirect('settings')
+                    response.set_cookie('message', message, 1)
+                    return response
     else:
         form = PostForm()
     context = {"form": form, "title": "Історія"}
