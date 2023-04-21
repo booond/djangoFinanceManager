@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
+from django.db.models import F
 from .models import History, Cryptocurrencies
 from .forms import PostForm, HistoryForm
-from .config import coins_list
+from .config import coins_dict
 
 import requests
 
@@ -10,32 +11,29 @@ def main(request):
     balance = 0
     expences = 0
     incomes = 0
-    link = ''
 
-    currencies_values = Cryptocurrencies.objects.values_list()
-    history_list = History.objects.values_list()
+    currencies_list = Cryptocurrencies.objects.all()
+    history_list = History.objects.select_related('crypto_currency')
 
-    if currencies_values:
-        link = 'https://api.coingecko.com/api/v3/simple/price?ids=' + currencies_values[0][1]
-        if len(currencies_values) > 1:
-            for currency in currencies_values[0:]:
-                link += f'%2C{currency[1]}'
-        link += '&vs_currencies=usd'
+    link = 'https://api.coingecko.com/api/v3/simple/price?ids=' + \
+           ','.join([currency.identificator for currency in currencies_list]) + \
+           '&vs_currencies=usd'
 
     response = requests.get(link)
     if response.status_code == 200:
         data = response.json()
-        for currency in currencies_values:
-            item = data.get(currency[1])
-            balance += item.get("usd") * float(currency[3])
+        for currency in currencies_list:
+            item = data.get(currency.identificator)
+            balance += item.get("usd") * float(currency.value)
 
         for x in history_list:
-            if x[2] == 'income':
-                item = data.get(Cryptocurrencies.objects.filter(id=x[1]).values('identificator').first()['identificator'])
-                incomes += float(x[3]) * item.get("usd")
-            elif x[2] == 'expense':
-                item = data.get(Cryptocurrencies.objects.filter(id=x[1]).values('identificator').first()['identificator'])
-                expences += float(x[3]) * item.get("usd")
+            if x.type == 'income':
+                item = data.get(x.crypto_currency.identificator)
+                incomes += float(x.amount) * item.get("usd")
+            elif x.type == 'expense':
+                item = data.get(x.crypto_currency.identificator)
+                expences += float(x.amount) * item.get("usd")
+
     context = {"title": "Зведення",
                "balance": round(balance, 2),
                "incomes": round(incomes, 2),
@@ -60,20 +58,21 @@ def settings(request):
         form = PostForm(request.POST)
         if form.is_valid():
             identificator = request.POST.get('identificator')
-            if Cryptocurrencies.objects.filter(identificator=identificator).exists():
+            currency, created = Cryptocurrencies.objects.get_or_create(identificator=identificator)
+            if not created:
                 message = 'Error! This currency is already exists in your list.'
                 response = redirect('settings')
                 response.set_cookie('message', message, 1)
                 return response
             else:
-                for item in coins_list:
-                    if item["id"] == identificator:
-                        form.instance.symbols = item["symbol"].upper()
-                        form.save()
-                        message = 'Succesful added!'
-                        response = redirect('settings')
-                        response.set_cookie('message', message, 1)
-                        return response
+                item = coins_dict.get(identificator)
+                if item:
+                    currency.symbols = item["symbol"].upper()
+                    currency.save()
+                    message = 'Succesful added!'
+                    response = redirect('settings')
+                    response.set_cookie('message', message, 1)
+                    return response
                 else:
                     message = 'Error! This currency doesn\'t support.'
                     response = redirect('settings')
@@ -89,23 +88,20 @@ def add(request):
     if request.method == "POST":
         form = HistoryForm(request.POST)
         if form.is_valid():
-            crypto_currency = request.POST.get('crypto_currency')
-            value = float(request.POST.get('amount'))
-            tp = request.POST.get('type')
-            obj = Cryptocurrencies.objects.get(id=crypto_currency)
+            crypto_currency = form.cleaned_data['crypto_currency']
+            value = form.cleaned_data['amount']
+            tp = form.cleaned_data['type']
+
             if tp == 'income':
-                result = float(obj.value) + value
-                obj.value = result
+                Cryptocurrencies.objects.filter(id=crypto_currency.id).update(value=F('value') + value)
             elif tp == 'expense':
-                result = float(obj.value) - value
-                if result >= 0:
-                    obj.value = result
+                if crypto_currency.value >= value:
+                    Cryptocurrencies.objects.filter(id=crypto_currency.id).update(value=F('value') - value)
                 else:
                     message = 'Error! You waste more, than you have.'
                     response = redirect('add')
                     response.set_cookie('message', message, 1)
                     return response
-            obj.save()
             form.save()
             message = 'Succesful added!'
             response = redirect('add')
