@@ -8,29 +8,38 @@ import requests
 
 def main(request):
     balance = 0
+    expences = 0
+    incomes = 0
     link = ''
+
     currencies_values = Cryptocurrencies.objects.values_list()
-    print(currencies_values)
+    history_list = History.objects.values_list()
+
     if currencies_values:
         link = 'https://api.coingecko.com/api/v3/simple/price?ids=' + currencies_values[0][1]
         if len(currencies_values) > 1:
             for currency in currencies_values[0:]:
                 link += f'%2C{currency[1]}'
         link += '&vs_currencies=usd'
-    print(link)
+
     response = requests.get(link)
-    print(response)
     if response.status_code == 200:
         data = response.json()
-        print(data)
         for currency in currencies_values:
             item = data.get(currency[1])
             balance += item.get("usd") * float(currency[3])
-    else:
-        data = {}
-    print(data)
 
-    context = {"title": "Зведення", "balance": round(balance, 2)}
+        for x in history_list:
+            if x[2] == 'income':
+                item = data.get(Cryptocurrencies.objects.filter(id=x[1]).values('identificator').first()['identificator'])
+                incomes += float(x[3]) * item.get("usd")
+            elif x[2] == 'expense':
+                item = data.get(Cryptocurrencies.objects.filter(id=x[1]).values('identificator').first()['identificator'])
+                expences += float(x[3]) * item.get("usd")
+    context = {"title": "Зведення",
+               "balance": round(balance, 2),
+               "incomes": round(incomes, 2),
+               "expenses": round(expences, 2)}
     return render(request, 'djangoFinanceManager/main.html', context)
 
 
