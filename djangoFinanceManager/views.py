@@ -57,27 +57,30 @@ def settings(request):
     if request.method == "POST":
         form = PostForm(request.POST)
         if form.is_valid():
-            identificator = request.POST.get('identificator')
-            currency, created = Cryptocurrencies.objects.get_or_create(identificator=identificator)
-            if not created:
-                message = 'Error! This currency is already exists in your list.'
-                response = redirect('settings')
-                response.set_cookie('message', message, 1)
-                return response
-            else:
-                item = coins_dict.get(identificator)
-                if item:
-                    currency.symbols = item["symbol"].upper()
+            identificator = form.cleaned_data['identificator']
+            item = coins_dict.get(identificator)
+            if item:
+                value = form.cleaned_data['value']
+                symbols = item["symbol"].upper()
+                is_crypto = form.cleaned_data['is_crypto']
+                currency, created = Cryptocurrencies.objects.get_or_create(
+                    identificator=identificator, defaults={"value": value, "is_crypto": is_crypto, "symbols": symbols})
+                if not created:
+                    message = 'Error! This currency is already exists in your list.'
+                    response = redirect('settings')
+                    response.set_cookie('message', message, 1)
+                    return response
+                else:
                     currency.save()
                     message = 'Succesful added!'
                     response = redirect('settings')
                     response.set_cookie('message', message, 1)
                     return response
-                else:
-                    message = 'Error! This currency doesn\'t support.'
-                    response = redirect('settings')
-                    response.set_cookie('message', message, 1)
-                    return response
+            else:
+                message = 'Error! This currency doesn\'t support.'
+                response = redirect('settings')
+                response.set_cookie('message', message, 1)
+                return response
     else:
         form = PostForm()
     context = {"form": form, "title": "Налаштування"}
