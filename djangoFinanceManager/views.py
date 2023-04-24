@@ -61,7 +61,7 @@ def settings(request):
             item = coins_dict.get(identificator)
             if item:
                 value = form.cleaned_data['value']
-                symbols = item["symbol"].upper()
+                symbols = item.upper()
                 is_crypto = form.cleaned_data['is_crypto']
                 currency, created = Cryptocurrencies.objects.get_or_create(
                     identificator=identificator, defaults={"value": value, "is_crypto": is_crypto, "symbols": symbols})
